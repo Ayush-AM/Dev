@@ -1,0 +1,13 @@
+langchain
+langchain-core
+langchain-community
+langchain-google-genai
+langchain-pinecone
+pinecone
+youtube-transcript-api
+yt-dlp
+pytube
+python-dotenv
+streamlit
+flask
+nest-asyncio

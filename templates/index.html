@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>YouTube Chat App</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f0f0f0; }
+        .container { max-width: 800px; margin: 20px auto; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .header { background: #ff0000; color: white; padding: 20px; text-align: center; }
+        .url-section { padding: 20px; border-bottom: 1px solid #eee; }
+        .url-input { width: 70%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
+        .process-btn { width: 25%; padding: 10px; background: #ff0000; color: white; border: none; border-radius: 5px; cursor: pointer; margin-left: 10px; }
+        .process-btn:hover { background: #cc0000; }
+        .chat-section { height: 400px; padding: 20px; overflow-y: auto; background: #f9f9f9; }
+        .message { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .user-message { background: #e3f2fd; text-align: right; }
+        .bot-message { background: #f1f8e9; }
+        .input-section { padding: 20px; display: flex; }
+        .chat-input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
+        .send-btn { padding: 10px 20px; background: #4caf50; color: white; border: none; border-radius: 5px; cursor: pointer; margin-left: 10px; }
+        .send-btn:hover { background: #45a049; }
+        .status { padding: 10px; text-align: center; font-style: italic; color: #666; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>YouTube Video Chat App</h1>
+        </div>
+        
+        <div class="url-section">
+            <input type="text" id="urlInput" class="url-input" placeholder="Enter YouTube URL...">
+            <button onclick="processVideo()" class="process-btn">Process Video</button>
+        </div>
+        
+        <div id="status" class="status hidden"></div>
+        
+        <div id="chatSection" class="chat-section hidden">
+            <div id="messages"></div>
+        </div>
+        
+        <div id="inputSection" class="input-section hidden">
+            <input type="text" id="chatInput" class="chat-input" placeholder="Ask a question..." onkeypress="handleKeyPress(event)">
+            <button onclick="sendMessage()" class="send-btn">Send</button>
+        </div>
+    </div>
+
+    <script>
+        let sessionId = null;
+
+        function showStatus(message) {
+            document.getElementById('status').textContent = message;
+            document.getElementById('status').classList.remove('hidden');
+        }
+
+        function hideStatus() {
+            document.getElementById('status').classList.add('hidden');
+        }
+
+        async function processVideo() {
+            const url = document.getElementById('urlInput').value.trim();
+            if (!url) return;
+
+            showStatus('Processing video... This may take a few minutes.');
+            
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 300000); // 5 minute timeout
+                
+                const response = await fetch('/process_video', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url }),
+                    signal: controller.signal
+                });
+                
+                clearTimeout(timeoutId);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    sessionId = data.session_id;
+                    hideStatus();
+                    document.getElementById('chatSection').classList.remove('hidden');
+                    document.getElementById('inputSection').classList.remove('hidden');
+                    addMessage('System', 'Video processed successfully! You can now ask questions.');
+                } else {
+                    showStatus('Error: ' + data.error);
+                }
+            } catch (error) {
+                if (error.name === 'AbortError') {
+                    showStatus('Error: Request timed out. Please try again.');
+                } else {
+                    showStatus('Error: ' + error.message);
+                }
+            }
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const question = input.value.trim();
+            if (!question || !sessionId) return;
+
+            addMessage('You', question);
+            input.value = '';
+
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ session_id: sessionId, question })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    addMessage('Bot', data.answer);
+                } else {
+                    addMessage('System', 'Error: ' + data.error);
+                }
+            } catch (error) {
+                addMessage('System', 'Error: ' + error.message);
+            }
+        }
+
+        function addMessage(sender, message) {
+            const messagesDiv = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message ' + (sender === 'You' ? 'user-message' : 'bot-message');
+            messageDiv.innerHTML = `<strong>${sender}:</strong> ${message}`;
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+    </script>
+</body>
+</html>

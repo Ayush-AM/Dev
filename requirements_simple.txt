@@ -1,0 +1,4 @@
+langchain-google-genai
+youtube-transcript-api
+python-dotenv
+flask
