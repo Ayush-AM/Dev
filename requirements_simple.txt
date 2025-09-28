@@ -1,4 +1,17 @@
-langchain-google-genai
-youtube-transcript-api
-python-dotenv
-flask
+# Essential Dependencies for Simple Version (application.py)
+
+# Web Framework
+Flask==3.0.0
+
+# AI Integration
+langchain-google-genai==0.0.6
+google-generativeai==0.3.2
+
+# YouTube Transcript
+youtube-transcript-api==0.6.2
+
+# Environment Variables
+python-dotenv==1.0.0
+
+# HTTP Requests
+requests==2.31.0

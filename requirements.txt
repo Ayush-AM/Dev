@@ -1,13 +1,40 @@
-langchain
-langchain-core
-langchain-community
-langchain-google-genai
-langchain-pinecone
-pinecone
-youtube-transcript-api
-yt-dlp
-pytube
-python-dotenv
-streamlit
-flask
-nest-asyncio
+# Core Web Framework
+Flask==3.0.0
+Werkzeug==3.0.1
+
+# AI and Language Models
+langchain==0.1.0
+langchain-core==0.1.10
+langchain-community==0.0.13
+langchain-google-genai==0.0.6
+google-generativeai==0.3.2
+
+# Vector Database (for advanced RAG)
+langchain-pinecone==0.0.3
+pinecone-client==3.0.0
+
+# YouTube Processing
+youtube-transcript-api==0.6.2
+yt-dlp==2024.1.7
+pytube==15.0.0
+
+# Environment and Configuration
+python-dotenv==1.0.0
+
+# Web Interface (alternative)
+streamlit==1.29.0
+
+# Async Support
+nest-asyncio==1.5.8
+
+# HTTP Requests
+requests==2.31.0
+
+# Text Processing
+numpy==1.24.3
+pandas==2.0.3
+
+# Development Tools
+black==23.12.1
+flake8==7.0.0
+pytest==7.4.4
